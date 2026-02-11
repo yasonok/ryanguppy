@@ -18,6 +18,9 @@
                 <li><a href="#products">商品列表</a></li>
                 <li><a href="#guide">養殖指南</a></li>
                 <li><a href="#contact">聯絡我們</a></li>
+                <li><a href="#" class="cart-icon" onclick="openCart(); return false;">
+                    🛒 購物車 <span id="cart-count" class="cart-count">0</span>
+                </a></li>
                 <li><a href="admin.html" class="admin-link">管理後台</a></li>
             </ul>
             <button class="mobile-menu-btn">☰</button>
@@ -181,6 +184,28 @@
             <p>&copy; 2024 Aquarium Studio. 專業孔雀魚專賣店</p>
         </div>
     </footer>
+
+    <!-- 購物車 Modal -->
+    <div id="cartModal" class="cart-modal">
+        <div class="cart-content">
+            <div class="cart-header">
+                <h2>🛒 購物車</h2>
+                <button class="cart-close" onclick="closeCart()">&times;</button>
+            </div>
+            <div id="cartBody" class="cart-body">
+                <!-- 購物車內容會在這裡 -->
+            </div>
+            <div class="cart-footer">
+                <div class="cart-total">
+                    <span>總計：</span>
+                    <span id="cartTotal" class="cart-total-price">NT$ 0</span>
+                </div>
+                <a href="https://line.me/ti/p/@yourlineid" id="checkoutBtn" class="btn-buy" style="background: var(--success-color);" target="_blank">
+                    💬 聯繫結帳
+                </a>
+            </div>
+        </div>
+    </div>
 
     <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
