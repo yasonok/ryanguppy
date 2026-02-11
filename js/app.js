@@ -79,6 +79,7 @@ function renderPreviewProducts() {
         { id: 4, name: '莫斯科藍', type: '藍色系', gender: '公', price: 800, stock: 8, image_url: 'https://via.placeholder.com/400x300?text=Moscow+Blue' },
         { id: 5, name: '紅禮服孔雀', type: '禮服', gender: '母', price: 550, stock: 0, image_url: 'https://via.placeholder.com/400x300?text=Red+Tuxedo', note: '已售完' },
     ];
+    allProducts = previewData;
     renderProducts(previewData);
 }
 
@@ -93,7 +94,8 @@ async function loadProducts() {
 
         if (error) throw error;
 
-        renderProducts(data || []);
+        allProducts = data || [];
+        renderProducts(allProducts);
     } catch (error) {
         console.error('載入商品失敗:', error);
         showError();
@@ -115,10 +117,11 @@ function renderProducts(products) {
     }
 
     container.innerHTML = products.map(product => `
-        <div class="product-card">
+        <div class="product-card" data-type="${product.type || ''}" data-gender="${product.gender || ''}">
             <img src="${product.image_url || 'https://via.placeholder.com/400x300?text=No+Image'}" 
                  alt="${product.name}" 
                  class="product-image"
+                 onclick="openLightbox('${product.image_url || ''}')"
                  onerror="this.src='https://via.placeholder.com/400x300?text=No+Image'">
             <div class="product-info">
                 <h3 class="product-name">${product.name}</h3>
@@ -148,6 +151,59 @@ function renderProducts(products) {
         </div>
     `).join('');
 }
+
+// 開啟圖片燈箱
+function openLightbox(imageUrl) {
+    if (!imageUrl) return;
+    document.getElementById('lightboxImg').src = imageUrl;
+    document.getElementById('lightbox').classList.add('active');
+}
+
+// 關閉圖片燈箱
+function closeLightbox() {
+    document.getElementById('lightbox').classList.remove('active');
+}
+
+// 篩選功能
+let allProducts = [];
+
+function filterProducts() {
+    const keyword = document.getElementById('searchInput').value.toLowerCase();
+    const activeTag = document.querySelector('.filter-tag.active').dataset.filter;
+    
+    let filtered = allProducts.filter(product => {
+        // 關鍵字搜尋
+        const matchKeyword = !keyword || 
+            product.name.toLowerCase().includes(keyword) ||
+            (product.type && product.type.toLowerCase().includes(keyword)) ||
+            (product.note && product.note.toLowerCase().includes(keyword));
+        
+        // 標籤篩選
+        let matchTag = true;
+        if (activeTag !== 'all') {
+            const [field, value] = activeTag.split(':');
+            if (field === 'type') {
+                matchTag = product.type === value || product.gender === value;
+            }
+        }
+        
+        return matchKeyword && matchTag;
+    });
+    
+    renderProducts(filtered);
+}
+
+// 初始化篩選標籤
+document.addEventListener('DOMContentLoaded', () => {
+    // 篩選標籤點擊
+    document.querySelectorAll('.filter-tag').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-tag').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterProducts();
+        });
+    });
+});
 
 // 加入購物車
 function addToCart(product) {

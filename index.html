@@ -40,6 +40,21 @@
     <section id="products" class="products-section">
         <div class="container">
             <h2 class="section-title">精選孔雀魚</h2>
+            
+            <!-- 搜尋和篩選 -->
+            <div class="search-filter">
+                <input type="text" id="searchInput" placeholder="🔍 搜尋商品..." oninput="filterProducts()">
+                <div id="filterTags" class="filter-tags">
+                    <button class="filter-tag active" data-filter="all">全部</button>
+                    <button class="filter-tag" data-filter="type:公">公魚</button>
+                    <button class="filter-tag" data-filter="type:母">母魚</button>
+                    <button class="filter-tag" data-filter="type:對">一對</button>
+                    <button class="filter-tag" data-filter="type:白子">白子</button>
+                    <button class="filter-tag" data-filter="type:蛇紋">蛇紋</button>
+                    <button class="filter-tag" data-filter="type:藍色系">藍色系</button>
+                </div>
+            </div>
+            
             <div id="products-container" class="products-grid">
                 <!-- 商品會從 Supabase 載入 -->
                 <div class="loading">
@@ -205,6 +220,12 @@
                 </a>
             </div>
         </div>
+    </div>
+
+    <!-- 圖片燈箱 -->
+    <div id="lightbox" class="lightbox" onclick="closeLightbox()">
+        <span class="lightbox-close">&times;</span>
+        <img id="lightboxImg" src="" alt="商品大圖">
     </div>
 
     <!-- Supabase JS -->

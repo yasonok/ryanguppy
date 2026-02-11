@@ -442,6 +442,54 @@ body {
     text-align: center;
 }
 
+/* 搜尋和篩選 */
+.search-filter {
+    margin-bottom: 30px;
+}
+
+.search-filter input {
+    width: 100%;
+    padding: 15px 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 30px;
+    font-size: 1rem;
+    margin-bottom: 15px;
+    transition: var(--transition);
+}
+
+.search-filter input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+}
+
+.filter-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+}
+
+.filter-tag {
+    padding: 8px 16px;
+    border: 2px solid #e0e0e0;
+    background: var(--white);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+.filter-tag:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.filter-tag.active {
+    background: var(--primary-color);
+    color: var(--white);
+    border-color: var(--primary-color);
+}
+
 /* 手機版 */
 @media (max-width: 768px) {
     .nav-links {
@@ -641,4 +689,39 @@ body {
 
 .cart-total-price {
     color: var(--accent-color);
+}
+
+/* 圖片燈箱 */
+.lightbox {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 3000;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.lightbox.active {
+    display: flex;
+}
+
+.lightbox img {
+    max-width: 90%;
+    max-height: 90%;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
+.lightbox-close {
+    position: absolute;
+    top: 20px;
+    right: 30px;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
 }
