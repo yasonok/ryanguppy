@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aquarium Studio - 專業孔雀魚專賣店</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                🐠 Aquarium Studio
+            </a>
+            <ul class="nav-links">
+                <li><a href="#products">商品列表</a></li>
+                <li><a href="#guide">養殖指南</a></li>
+                <li><a href="#contact">聯絡我們</a></li>
+                <li><a href="admin.html" class="admin-link">管理後台</a></li>
+            </ul>
+            <button class="mobile-menu-btn">☰</button>
+        </div>
+    </nav>
+
+    <!-- Hero 區塊 -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>專業孔雀魚養殖與販售</h1>
+            <p>精選優質品種 | 讓您輕鬆擁有美麗的水族世界</p>
+            <a href="#products" class="btn btn-primary">查看商品</a>
+        </div>
+    </section>
+
+    <!-- 商品列表 -->
+    <section id="products" class="products-section">
+        <div class="container">
+            <h2 class="section-title">精選孔雀魚</h2>
+            <div id="products-container" class="products-grid">
+                <!-- 商品會從 Supabase 載入 -->
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>載入中...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 養殖指南 -->
+    <section id="guide" class="guide-section">
+        <div class="container">
+            <h2 class="section-title">🐠 孔雀魚飼養指南</h2>
+            
+            <div class="guide-grid">
+                <div class="guide-card">
+                    <div class="guide-icon">🌡️</div>
+                    <h3>水溫控制</h3>
+                    <p>最佳溫度 24-26°C</p>
+                    <p>可容忍 20-28°C</p>
+                </div>
+                <div class="guide-card">
+                    <div class="guide-icon">💧</div>
+                    <h3>水質管理</h3>
+                    <p>pH 值 7.0-7.5</p>
+                    <p>每週換水 20-30%</p>
+                </div>
+                <div class="guide-card">
+                    <div class="guide-icon">🐟</div>
+                    <h3>壽命與繁殖</h3>
+                    <p>平均壽命 2-3 年</p>
+                    <p>繁殖週期約 28 天</p>
+                </div>
+                <div class="guide-card">
+                    <div class="guide-icon">🍽️</div>
+                    <h3>餵食建議</h3>
+                    <p>每天 1-2 次</p>
+                    <p>少量多餐原則</p>
+                </div>
+            </div>
+
+            <div class="guide-details">
+                <details>
+                    <summary>📖 水質管理詳解</summary>
+                    <div class="detail-content">
+                        <p>孔雀魚排泄物和殘餘飼料會在水中分解，產生氨氮和亞硝酸鹽，這些物質對魚類有毒。硝化細菌能將有毒物質轉化為毒性較低的硝酸鹽。</p>
+                        <h4>建議每週檢測：</h4>
+                        <ul>
+                            <li>pH 值：7.0-7.5（弱鹼性）</li>
+                            <li>水溫：22-26°C</li>
+                            <li>氨氮：0 ppm（越低越好）</li>
+                            <li>亞硝酸鹽：0 ppm</li>
+                            <li>硝酸鹽：低於 20 ppm</li>
+                        </ul>
+                    </div>
+                </details>
+                <details>
+                    <summary>🍽️ 餵食建議詳解</summary>
+                    <div class="detail-content">
+                        <h4>推薦飼料：</h4>
+                        <ul>
+                            <li>孔雀魚專用顆粒飼料</li>
+                            <li>小型熱帶魚薄片飼料</li>
+                            <li>螺旋藻薄片（增色效果好）</li>
+                        </ul>
+                        <h4>活餌推薦：</h4>
+                        <ul>
+                            <li>豐年蝦苗：蛋白質含量高</li>
+                            <li>紅蟲/黑蟲：高蛋白來源</li>
+                        </ul>
+                        <p><strong>⚠️ 千萬不要：</strong>過度餵食、餵食人類食物、餵食變質飼料</p>
+                    </div>
+                </details>
+                <details>
+                    <summary>🏠 魚缸環境</summary>
+                    <div class="detail-content">
+                        <h4>最低需求：</h4>
+                        <ul>
+                            <li>單獨飼養：20 公升以上</li>
+                            <li>繁殖缸：30 公升以上</li>
+                            <li>群養：每隻魚至少 4 公升</li>
+                        </ul>
+                        <h4>推薦設備：</h4>
+                        <ul>
+                            <li>海綿過濾器：最適合孔雀魚</li>
+                            <li>加溫器：100W 恒溫型</li>
+                            <li>LED 燈：每天照明 8-10 小時</li>
+                        </ul>
+                    </div>
+                </details>
+                <details>
+                    <summary>👶 繁殖技巧</summary>
+                    <div class="detail-content">
+                        <h4>繁殖黃金法則：</h4>
+                        <ul>
+                            <li>公母比例 1:2 或 1:3 為佳</li>
+                            <li>繁殖缸水溫維持 26°C</li>
+                            <li>母魚產後休息 1-2 週</li>
+                            <li>幼魚長到 1-2 公分時移出</li>
+                        </ul>
+                        <h4>判斷母魚生產徵兆：</h4>
+                        <ul>
+                            <li>胎斑：腹部後方出現明顯黑斑</li>
+                            <li>腹部膨大</li>
+                            <li>躲在水草間</li>
+                            <li>食慾下降</li>
+                        </ul>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- 聯絡我們 -->
+    <section id="contact" class="contact-section">
+        <div class="container">
+            <h2 class="section-title">聯絡我們</h2>
+            <div class="contact-grid">
+                <a href="https://line.me/ti/p/@yourlineid" class="contact-card" target="_blank">
+                    <div class="contact-icon">💬</div>
+                    <h3>LINE 客服</h3>
+                    <p>即時回答您的問題</p>
+                </a>
+                <div class="contact-card">
+                    <div class="contact-icon">📦</div>
+                    <h3>快速配送</h3>
+                    <p>專業包裝確保安全送達</p>
+                </div>
+                <div class="contact-card">
+                    <div class="contact-icon">🔧</div>
+                    <h3>養殖諮詢</h3>
+                    <p>提供專業養殖建議</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Aquarium Studio. 專業孔雀魚專賣店</p>
+        </div>
+    </footer>
+
+    <!-- Supabase JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
