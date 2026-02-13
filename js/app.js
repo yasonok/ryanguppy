@@ -140,7 +140,7 @@ function renderProducts(products) {
                             ${product.stock <= 0 ? 'disabled' : ''}>
                         🛒 加入購物車
                     </button>
-                    <a href="https://line.me/ti/p/@yourlineid?text=${encodeURIComponent('我想購買：' + product.name)}" 
+                    <a href="https://line.me/ti/p/@yasonok02061?text=${encodeURIComponent('我想購買：' + product.name)}" 
                        class="btn-buy" 
                        style="flex: 1; background: #28a745;"
                        target="_blank">
@@ -459,7 +459,7 @@ function showCheckoutForm() {
                 <div style="text-align: center; margin-top: 15px;">
                     <p style="color: #666; margin-bottom: 10px;">或透過通訊軟體聯繫：</p>
                     <div style="display: flex; gap: 10px;">
-                        <a href="https://line.me/ti/p/@yourlineid?text=${encodeURIComponent('我想購買孔雀魚，訂單資訊如下：\n\n' + cart.map(item => item.name + ' x' + item.quantity).join('\n') + '\n\n總計：NT$' + Cart.total.toLocaleString())}" 
+                        <a href="https://line.me/ti/p/@yasonok02061?text=${encodeURIComponent('我想購買孔雀魚，訂單資訊如下：\n\n' + cart.map(item => item.name + ' x' + item.quantity).join('\n') + '\n\n總計：NT$' + Cart.total.toLocaleString())}" 
                            style="flex: 1; padding: 12px; background: #06C755; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; text-align: center;"
                            target="_blank">
                             💬 LINE 聯繫
