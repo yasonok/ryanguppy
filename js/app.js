@@ -385,11 +385,208 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// 匯出函數供其他模組使用
-window.initSupabase = initSupabase;
-window.loadProducts = loadProducts;
-window.addToCart = addToCart;
-window.openCart = openCart;
-window.closeCart = closeCart;
-window.updateCartQty = updateCartQty;
-window.removeFromCart = removeFromCart;
+// 結帳功能 - WhatsApp / 表單提交
+async function checkout() {
+    const cart = Cart.get();
+    if (cart.length === 0) {
+        alert('購物車是空的！');
+        return;
+    }
+
+    // 生成訂單摘要
+    let orderSummary = cart.map(item => 
+        `- ${item.name} x${item.quantity} = NT$ ${item.price * item.quantity}`
+    ).join('\n');
+
+    let message = `🐠 Aquarium Studio 訂單\n\n`;
+    message += `姓名：\n`;
+    message += `電話：\n`;
+    message += `地址：\n\n`;
+    message += `--- 商品 ---\n`;
+    message += orderSummary + '\n\n';
+    message += `--- 合計 ---\n`;
+    message += `NT$ ${Cart.total.toLocaleString()}`;
+
+    // 方式1: WhatsApp
+    const whatsappUrl = `https://wa.me/886912345678?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+
+    // 顯示結帳完成
+    showToast('✅ 已開啟 WhatsApp 進行結帳！');
+    Cart.clear();
+    closeCart();
+}
+
+// 結帳表單 Modal
+function showCheckoutForm() {
+    const cart = Cart.get();
+    if (cart.length === 0) {
+        alert('購物車是空的！');
+        return;
+    }
+
+    const modal = document.createElement('div');
+    modal.id = 'checkoutModal';
+    modal.className = 'modal active';
+    modal.innerHTML = `
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>📦 填寫訂單資料</h2>
+                <button class="modal-close" onclick="closeCheckoutForm()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="checkoutForm" onsubmit="submitOrder(event)">
+                    <div class="form-group">
+                        <label>姓名 *</label>
+                        <input type="text" id="customerName" required placeholder="請輸入姓名">
+                    </div>
+                    <div class="form-group">
+                        <label>電話 *</label>
+                        <input type="tel" id="customerPhone" required placeholder="09xx-xxx-xxx">
+                    </div>
+                    <div class="form-group">
+                        <label>LINE ID</label>
+                        <input type="text" id="customerLine" placeholder="方便聯繫用">
+                    </div>
+                    <div class="form-group">
+                        <label>配送地址 *</label>
+                        <input type="text" id="shippingAddress" required placeholder="完整地址">
+                    </div>
+                    <div class="form-group">
+                        <label>備註</label>
+                        <textarea id="orderNote" rows="2" placeholder="特殊需求"></textarea>
+                    </div>
+
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h4 style="margin-bottom: 10px;">📋 訂單摘要</h4>
+                        ${cart.map(item => `
+                            <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+                                <span>${item.name} x${item.quantity}</span>
+                                <span>NT$ ${(item.price * item.quantity).toLocaleString()}</span>
+                            </div>
+                        `).join('')}
+                        <hr style="margin: 10px 0; border: none; border-top: 1px solid #ddd;">
+                        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1rem;">
+                            <span>總計</span>
+                            <span style="color: var(--accent-color);">NT$ ${Cart.total.toLocaleString()}</span>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 10px;">
+                        <button type="button" class="btn-cancel" onclick="closeCheckoutForm()" style="flex: 1;">取消</button>
+                        <button type="submit" class="btn-save" style="flex: 1;">📤 提交訂單</button>
+                    </div>
+                    <button type="button" onclick="checkoutViaWhatsApp()" style="width: 100%; margin-top: 10px; padding: 12px; background: #25D366; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                        💬 或用 WhatsApp 聯繫
+                    </button>
+                </form>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+}
+
+function closeCheckoutForm() {
+    const modal = document.getElementById('checkoutModal');
+    if (modal) modal.remove();
+}
+
+async function submitOrder(event) {
+    event.preventDefault();
+
+    const orderData = {
+        customer_name: document.getElementById('customerName').value.trim(),
+        customer_phone: document.getElementById('customerPhone').value.trim(),
+        customer_line_id: document.getElementById('customerLine').value.trim(),
+        shipping_address: document.getElementById('shippingAddress').value.trim(),
+        total_amount: Cart.total,
+        note: document.getElementById('orderNote').value.trim(),
+        status: 'pending'
+    };
+
+    // 儲存到 Supabase（如果已設定）
+    if (supabase && SUPABASE_URL !== 'YOUR_SUPABASE_URL') {
+        try {
+            const { data, error } = await supabase
+                .from('orders')
+                .insert([orderData]);
+
+            if (error) throw error;
+
+            // 也儲存訂單項目
+            const cart = Cart.get();
+            const orderItems = cart.map(item => ({
+                order_id: data[0].id,
+                product_id: item.id,
+                product_name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                subtotal: item.price * item.quantity
+            }));
+
+            await supabase.from('order_items').insert(orderItems);
+
+            alert('✅ 訂單已提交！我們會盡快與您聯繫。');
+            Cart.clear();
+            closeCheckoutForm();
+
+        } catch (error) {
+            console.error('儲存訂單失敗:', error);
+            alert('❌ 訂單提交失敗，請直接用 WhatsApp 聯繫我們');
+        }
+    } else {
+        // 預覽模式：生成 WhatsApp 訊息
+        const message = generateOrderMessage(orderData);
+        const whatsappUrl = `https://wa.me/886912345678?text=${encodeURIComponent(message)}`;
+        window.open(whatsappUrl, '_blank');
+        showToast('✅ 已開啟 WhatsApp！請發送訂單資訊');
+        Cart.clear();
+        closeCheckoutForm();
+    }
+}
+
+function generateOrderMessage(orderData) {
+    const cart = Cart.get();
+    let message = `🐠 Aquarium Studio 訂單\n\n`;
+    message += `姓名：${orderData.customer_name}\n`;
+    message += `電話：${orderData.customer_phone}\n`;
+    message += `LINE：${orderData.customer_line_id || '無'}\n`;
+    message += `地址：${orderData.shipping_address}\n`;
+    if (orderData.note) message += `備註：${orderData.note}\n`;
+    message += `\n--- 商品 ---\n`;
+    message += cart.map(item => `${item.name} x${item.quantity} = NT$ ${item.price * item.quantity}`).join('\n');
+    message += `\n\n--- 合計 ---\n`;
+    message += `NT$ ${Cart.total.toLocaleString()}`;
+    return message;
+}
+
+function checkoutViaWhatsApp() {
+    const orderData = {
+        customer_name: '',
+        customer_phone: '',
+        customer_line_id: '',
+        shipping_address: '',
+        note: ''
+    };
+    const message = `🐠 Aquarium Studio 訂單\n\n請幫我下單，謝謝！\n\n（購物車內容見附圖）`;
+    const whatsappUrl = `https://wa.me/886912345678?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+    showToast('✅ 已開啟 WhatsApp！');
+    closeCheckoutForm();
+}
+
+// 更新結帳按鈕
+document.addEventListener('DOMContentLoaded', () => {
+    // 替換原有結帳按鈕
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    if (checkoutBtn) {
+        checkoutBtn.onclick = showCheckoutForm;
+        checkoutBtn.innerHTML = '💳 結帳';
+    }
+});
+
+// 匯出函數
+window.showCheckoutForm = showCheckoutForm;
+window.closeCheckoutForm = closeCheckoutForm;
+window.submitOrder = submitOrder;
+window.checkoutViaWhatsApp = checkoutViaWhatsApp;
