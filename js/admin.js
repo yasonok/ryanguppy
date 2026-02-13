@@ -1,6 +1,6 @@
 // Supabase 配置 - 請 @Mars_yasonok_bot 填入正確的連接資訊
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://yasonok.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_KmbFDTbOwxAS4kFFzNKnoA_bWJARvIA';
 // 需要有寫入權限的 key，建議使用 service_role key
 
 let supabase;
