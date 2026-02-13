@@ -1,6 +1,8 @@
-// Supabase 配置 - 請 @Mars_yasonok_bot 填入正確的連接資訊
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+// Supabase 配置 - 請 @Mars_yasonok_bot 在 Vercel 環境變數中設定
+// 變數名稱: SUPABASE_URL, SUPABASE_ANON_KEY
+// 生產環境會自動讀取環境變數
+const SUPABASE_URL = window.ENV?.SUPABASE_URL || 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || 'YOUR_SUPABASE_ANON_KEY';
 
 // 購物車管理 (LocalStorage)
 const Cart = {
