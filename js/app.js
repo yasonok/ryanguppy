@@ -385,8 +385,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// 結帳功能 - WhatsApp / 表單提交
-async function checkout() {
+// 結帳功能 - Email / LINE
+function showCheckoutForm() {
     const cart = Cart.get();
     if (cart.length === 0) {
         alert('購物車是空的！');
@@ -394,36 +394,17 @@ async function checkout() {
     }
 
     // 生成訂單摘要
+    let orderItems = cart.map(item => `
+        <tr>
+            <td style="padding: 8px; border: 1px solid #ddd;">${item.name}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${item.quantity}</td>
+            <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">NT$ ${(item.price * item.quantity).toLocaleString()}</td>
+        </tr>
+    `).join('');
+
     let orderSummary = cart.map(item => 
         `- ${item.name} x${item.quantity} = NT$ ${item.price * item.quantity}`
-    ).join('\n');
-
-    let message = `🐠 Aquarium Studio 訂單\n\n`;
-    message += `姓名：\n`;
-    message += `電話：\n`;
-    message += `地址：\n\n`;
-    message += `--- 商品 ---\n`;
-    message += orderSummary + '\n\n';
-    message += `--- 合計 ---\n`;
-    message += `NT$ ${Cart.total.toLocaleString()}`;
-
-    // 方式1: WhatsApp
-    const whatsappUrl = `https://wa.me/886912345678?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-
-    // 顯示結帳完成
-    showToast('✅ 已開啟 WhatsApp 進行結帳！');
-    Cart.clear();
-    closeCart();
-}
-
-// 結帳表單 Modal
-function showCheckoutForm() {
-    const cart = Cart.get();
-    if (cart.length === 0) {
-        alert('購物車是空的！');
-        return;
-    }
+    ).join('%0D%0A');
 
     const modal = document.createElement('div');
     modal.id = 'checkoutModal';
@@ -472,14 +453,23 @@ function showCheckoutForm() {
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 10px;">
-                        <button type="button" class="btn-cancel" onclick="closeCheckoutForm()" style="flex: 1;">取消</button>
-                        <button type="submit" class="btn-save" style="flex: 1;">📤 提交訂單</button>
-                    </div>
-                    <button type="button" onclick="checkoutViaWhatsApp()" style="width: 100%; margin-top: 10px; padding: 12px; background: #25D366; color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                        💬 或用 WhatsApp 聯繫
-                    </button>
+                    <button type="submit" class="btn-save" style="width: 100%; margin-bottom: 10px;">📤 提交訂單</button>
                 </form>
+
+                <div style="text-align: center; margin-top: 15px;">
+                    <p style="color: #666; margin-bottom: 10px;">或透過通訊軟體聯繫：</p>
+                    <div style="display: flex; gap: 10px;">
+                        <a href="https://line.me/ti/p/@yourlineid?text=${encodeURIComponent('我想購買孔雀魚，訂單資訊如下：\n\n' + cart.map(item => item.name + ' x' + item.quantity).join('\n') + '\n\n總計：NT$' + Cart.total.toLocaleString())}" 
+                           style="flex: 1; padding: 12px; background: #06C755; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; text-align: center;"
+                           target="_blank">
+                            💬 LINE 聯繫
+                        </a>
+                        <a href="mailto:your@email.com?subject=訂購孔雀魚&body=${encodeURIComponent('訂單資訊：\n\n' + cart.map(item => item.name + ' x' + item.quantity + ' = NT$' + (item.price * item.quantity)).join('\n') + '\n\n總計：NT$' + Cart.total.toLocaleString() + '\n\n姓名：\n電話：\n地址：')}" 
+                           style="flex: 1; padding: 12px; background: #4285F4; color: white; text-decoration: none; border-radius: 8px; font-weight: 600; text-align: center;">
+                            📧 Email
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -532,61 +522,26 @@ async function submitOrder(event) {
 
         } catch (error) {
             console.error('儲存訂單失敗:', error);
-            alert('❌ 訂單提交失敗，請直接用 WhatsApp 聯繫我們');
+            alert('❌ 訂單提交失敗，請用 LINE 或 Email 聯繫我們');
         }
     } else {
-        // 預覽模式：生成 WhatsApp 訊息
-        const message = generateOrderMessage(orderData);
-        const whatsappUrl = `https://wa.me/886912345678?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, '_blank');
-        showToast('✅ 已開啟 WhatsApp！請發送訂單資訊');
+        // 預覽模式：生成 Email 連結
+        const subject = encodeURIComponent('【Aquarium Studio】訂單提交');
+        const body = encodeURIComponent(
+            `訂單資訊已提交，以下是我的訂單：\n\n` +
+            `姓名：${orderData.customer_name}\n` +
+            `電話：${orderData.customer_phone}\n` +
+            `LINE：${orderData.customer_line_id || '無'}\n` +
+            `地址：${orderData.shipping_address}\n` +
+            `備註：${orderData.note || '無'}\n\n` +
+            `--- 商品 ---\n` +
+            Cart.get().map(item => `${item.name} x${item.quantity} = NT$ ${item.price * item.quantity}`).join('\n') +
+            `\n\n總計：NT$ ${Cart.total.toLocaleString()}`
+        );
+        
+        window.location.href = `mailto:your@email.com?subject=${subject}&body=${body}`;
+        showToast('✅ 請發送 Email 完成訂單！');
         Cart.clear();
         closeCheckoutForm();
     }
 }
-
-function generateOrderMessage(orderData) {
-    const cart = Cart.get();
-    let message = `🐠 Aquarium Studio 訂單\n\n`;
-    message += `姓名：${orderData.customer_name}\n`;
-    message += `電話：${orderData.customer_phone}\n`;
-    message += `LINE：${orderData.customer_line_id || '無'}\n`;
-    message += `地址：${orderData.shipping_address}\n`;
-    if (orderData.note) message += `備註：${orderData.note}\n`;
-    message += `\n--- 商品 ---\n`;
-    message += cart.map(item => `${item.name} x${item.quantity} = NT$ ${item.price * item.quantity}`).join('\n');
-    message += `\n\n--- 合計 ---\n`;
-    message += `NT$ ${Cart.total.toLocaleString()}`;
-    return message;
-}
-
-function checkoutViaWhatsApp() {
-    const orderData = {
-        customer_name: '',
-        customer_phone: '',
-        customer_line_id: '',
-        shipping_address: '',
-        note: ''
-    };
-    const message = `🐠 Aquarium Studio 訂單\n\n請幫我下單，謝謝！\n\n（購物車內容見附圖）`;
-    const whatsappUrl = `https://wa.me/886912345678?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-    showToast('✅ 已開啟 WhatsApp！');
-    closeCheckoutForm();
-}
-
-// 更新結帳按鈕
-document.addEventListener('DOMContentLoaded', () => {
-    // 替換原有結帳按鈕
-    const checkoutBtn = document.getElementById('checkoutBtn');
-    if (checkoutBtn) {
-        checkoutBtn.onclick = showCheckoutForm;
-        checkoutBtn.innerHTML = '💳 結帳';
-    }
-});
-
-// 匯出函數
-window.showCheckoutForm = showCheckoutForm;
-window.closeCheckoutForm = closeCheckoutForm;
-window.submitOrder = submitOrder;
-window.checkoutViaWhatsApp = checkoutViaWhatsApp;
