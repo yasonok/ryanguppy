@@ -545,3 +545,25 @@ async function submitOrder(event) {
         closeCheckoutForm();
     }
 }
+
+// 更新結帳按鈕
+document.addEventListener('DOMContentLoaded', () => {
+    // 替換原有結帳按鈕
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    if (checkoutBtn) {
+        checkoutBtn.onclick = showCheckoutForm;
+        checkoutBtn.innerHTML = '💳 結帳';
+    }
+});
+
+// 匯出函數供其他模組使用
+window.showCheckoutForm = showCheckoutForm;
+window.closeCheckoutForm = closeCheckoutForm;
+window.submitOrder = submitOrder;
+window.initSupabase = initSupabase;
+window.loadProducts = loadProducts;
+window.addToCart = addToCart;
+window.openCart = openCart;
+window.closeCart = closeCart;
+window.updateCartQty = updateCartQty;
+window.removeFromCart = removeFromCart;
