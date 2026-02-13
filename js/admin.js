@@ -235,7 +235,7 @@ async function openEditModal(id) {
         document.getElementById('productGender').value = product.gender || '';
         document.getElementById('productPrice').value = product.price || '';
         document.getElementById('productStock').value = product.stock || '';
-        document.getElementById('productImage').value = product.image_url || '';
+        document.getElementById('productImageUrl').value = product.image_url || '';
         document.getElementById('productStatus').value = product.status || 'available';
         document.getElementById('productNote').value = product.note || '';
         
@@ -269,7 +269,7 @@ async function saveProduct() {
         gender: document.getElementById('productGender').value,
         price: parseInt(document.getElementById('productPrice').value) || 0,
         stock: parseInt(document.getElementById('productStock').value) || 0,
-        image_url: document.getElementById('productImage').value.trim(),
+        image_url: document.getElementById('productImageUrl').value.trim(),
         status: document.getElementById('productStatus').value,
         note: document.getElementById('productNote').value.trim()
     };
@@ -379,6 +379,108 @@ function subscribeToProducts() {
         });
 }
 
+// ========== 圖片上傳功能 ==========
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+        uploadImage(file);
+    }
+}
+
+function handleDragOver(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    document.getElementById('imageUploadArea').classList.add('dragover');
+}
+
+function handleDragLeave(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    document.getElementById('imageUploadArea').classList.remove('dragover');
+}
+
+function handleDrop(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    document.getElementById('imageUploadArea').classList.remove('dragover');
+    
+    const file = event.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) {
+        uploadImage(file);
+    } else {
+        showToast('❌ 請上傳圖片檔案', 'error');
+    }
+}
+
+async function uploadImage(file) {
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('❌ 圖片大小超過 5MB', 'error');
+        return;
+    }
+    
+    const progress = document.getElementById('uploadProgress');
+    progress.classList.add('active');
+    
+    try {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        
+        reader.onload = async () => {
+            const base64 = reader.result.split(',')[1];
+            
+            const formData = new FormData();
+            formData.append('image', base64);
+            formData.append('type', 'base64');
+            
+            const response = await fetch('https://api.imgur.com/3/image', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Client-ID YOUR_IMGUR_CLIENT_ID'
+                },
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                const imageUrl = data.data.link;
+                document.getElementById('productImageUrl').value = imageUrl;
+                previewImage(imageUrl);
+                showToast('✅ 圖片上傳成功！', 'success');
+            } else {
+                throw new Error(data.data.error || '上傳失敗');
+            }
+            
+            progress.classList.remove('active');
+        };
+        
+        reader.onerror = () => {
+            throw new Error('讀取檔案失敗');
+        };
+    } catch (error) {
+        console.error('上傳錯誤:', error);
+        progress.classList.remove('active');
+        showToast('❌ 上傳失敗: ' + error.message, 'error');
+    }
+}
+
+function previewImage(url) {
+    const preview = document.getElementById('imagePreview');
+    const container = document.getElementById('imageUploadArea');
+    
+    if (url) {
+        preview.src = url;
+        preview.onload = () => container.classList.add('has-image');
+        preview.onerror = () => {
+            container.classList.remove('has-image');
+            showToast('❌ 圖片網址無效', 'error');
+        };
+    } else {
+        container.classList.remove('has-image');
+    }
+}
+
 // 初始化
 document.addEventListener('DOMContentLoaded', initAdmin);
 
@@ -391,3 +493,7 @@ window.deleteProduct = deleteProduct;
 window.filterProducts = filterProducts;
 window.previewImage = previewImage;
 window.showToast = showToast;
+window.handleFileSelect = handleFileSelect;
+window.handleDragOver = handleDragOver;
+window.handleDragLeave = handleDragLeave;
+window.handleDrop = handleDrop;
