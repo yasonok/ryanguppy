@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>網站設定 - Aquarium Studio</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #006994;
+            --success-color: #28a745;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+        }
+        
+        .admin-wrapper {
+            margin-top: 60px;
+            min-height: calc(100vh - 60px);
+            background: #f5f7fa;
+        }
+        
+        /* Header */
+        .admin-header {
+            background: linear-gradient(135deg, var(--primary-color), #00a8cc);
+            color: white;
+            padding: 30px 0;
+        }
+        
+        .admin-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+        
+        /* Admin Container */
+        .admin-container {
+            padding: 30px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        
+        /* Settings Sections */
+        .settings-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+        
+        .settings-card-header {
+            padding: 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .settings-card-header i {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+        }
+        
+        .settings-card-header h2 {
+            font-size: 1.1rem;
+            color: #333;
+            margin: 0;
+        }
+        
+        .settings-card-body {
+            padding: 25px;
+        }
+        
+        /* Form Styles */
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        
+        .form-hint {
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 5px;
+        }
+        
+        /* Preview Section */
+        .preview-box {
+            background: #f8f9fa;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+        
+        .preview-box h4 {
+            color: #666;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        
+        /* Action Buttons */
+        .settings-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid #eee;
+        }
+        
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #005a80;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 25px;
+            border-radius: 8px;
+            color: white;
+            z-index: 3000;
+            animation: slideIn 0.3s ease;
+        }
+        
+        .toast.success { background: var(--success-color); }
+        .toast.error { background: var(--danger-color); }
+        
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .settings-actions {
+                flex-direction: column;
+            }
+            
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+        
+        /* Quick Links */
+        .quick-links {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .quick-link {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            text-decoration: none;
+            color: #333;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+            transition: all 0.2s;
+        }
+        
+        .quick-link:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+        
+        .quick-link i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- 導航欄 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">🐠 Aquarium Studio</a>
+            <ul class="nav-links">
+                <li><a href="index.html"><i class="fas fa-home"></i> 首頁</a></li>
+                <li><a href="admin.html"><i class="fas fa-box"></i> 商品管理</a></li>
+                <li><a href="settings.html" class="admin-link"><i class="fas fa-cog"></i> 網站設定</a></li>
+            </ul>
+            <button class="mobile-menu-btn">☰</button>
+        </div>
+    </nav>
+
+    <div class="admin-wrapper">
+        <!-- Header -->
+        <header class="admin-header">
+            <div class="container">
+                <h1>⚙️ 網站設定</h1>
+                <p>管理商店基本資訊與聯絡方式</p>
+            </div>
+        </header>
+
+        <div class="admin-container">
+            <!-- Quick Links -->
+            <div class="quick-links">
+                <a href="admin.html" class="quick-link">
+                    <i class="fas fa-box"></i>
+                    <span>商品管理</span>
+                </a>
+                <a href="../index.html" target="_blank" class="quick-link">
+                    <i class="fas fa-eye"></i>
+                    <span>查看商店</span>
+                </a>
+            </div>
+
+            <form id="settingsForm" onsubmit="saveSettings(event)">
+                <!-- 基本資訊 -->
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <i class="fas fa-store"></i>
+                        <h2>基本資訊</h2>
+                    </div>
+                    <div class="settings-card-body">
+                        <div class="form-group">
+                            <label for="siteName">商店名稱</label>
+                            <input type="text" id="siteName" placeholder="Aquarium Studio" value="Aquarium Studio">
+                        </div>
+                        <div class="form-group">
+                            <label for="siteSubtitle">商店副標題</label>
+                            <input type="text" id="siteSubtitle" placeholder="專業孔雀魚專賣店" value="專業孔雀魚專賣店">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 聯絡資訊 -->
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <i class="fas fa-address-card"></i>
+                        <h2>聯絡資訊</h2>
+                    </div>
+                    <div class="settings-card-body">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="lineId">LINE ID</label>
+                                <input type="text" id="lineId" placeholder="tsAGZrm9vt" value="tsAGZrm9vt">
+                                <p class="form-hint">會顯示為 line.me/ti/p/您的ID</p>
+                            </div>
+                            <div class="form-group">
+                                <label for="contactEmail">客服 Email</label>
+                                <input type="email" id="contactEmail" placeholder="your@email.com" value="">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 首頁 Banner -->
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <i class="fas fa-image"></i>
+                        <h2>首頁 Banner</h2>
+                    </div>
+                    <div class="settings-card-body">
+                        <div class="form-group">
+                            <label for="heroTitle">Banner 標題</label>
+                            <input type="text" id="heroTitle" placeholder="專業孔雀魚養殖與販售" value="專業孔雀魚養殖與販售">
+                        </div>
+                        <div class="form-group">
+                            <label for="heroSubtitle">Banner 副標題</label>
+                            <textarea id="heroSubtitle" placeholder="精選優質品種 | 讓您輕鬆擁有美麗的水族世界">精選優質品種 | 讓您輕鬆擁有美麗的水族世界</textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 養殖指南 -->
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <i class="fas fa-book"></i>
+                        <h2>養殖指南</h2>
+                    </div>
+                    <div class="settings-card-body">
+                        <div class="form-group">
+                            <label for="careGuideTitle">指南標題</label>
+                            <input type="text" id="careGuideTitle" placeholder="孔雀魚飼養指南" value="孔雀魚飼養指南">
+                        </div>
+                        <div class="form-group">
+                            <label for="optimalTemp">最佳水溫</label>
+                            <input type="text" id="optimalTemp" placeholder="24-26°C" value="24-26°C">
+                        </div>
+                        <div class="form-group">
+                            <label for="optimalPH">最佳 pH 值</label>
+                            <input type="text" id="optimalPH" placeholder="7.0-7.5" value="7.0-7.5">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 進階設定 -->
+                <div class="settings-card">
+                    <div class="settings-card-header">
+                        <i class="fas fa-sliders-h"></i>
+                        <h2>進階設定</h2>
+                    </div>
+                    <div class="settings-card-body">
+                        <div class="form-group">
+                            <label for="currency">貨幣</label>
+                            <select id="currency">
+                                <option value="NT$">新台幣 (NT$)</option>
+                                <option value="$">美元 ($)</option>
+                                <option value="¥">日圓 (¥)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="showStock" checked> 顯示庫存數量
+                            </label>
+                        </div>
+                        <div class="form-group">
+                            <label>
+                                <input type="checkbox" id="enableReviews" checked> 啟用商品評價
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="settings-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 儲存設定
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="previewSettings()">
+                        <i class="fas fa-eye"></i> 預覽
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2024 Aquarium Studio. 專業孔雀魚專賣店</p>
+        </div>
+    </footer>
+
+    <script>
+        // 網站設定
+        const SiteSettings = {
+            key: 'aquarium_site_settings',
+            
+            get() {
+                return JSON.parse(localStorage.getItem(this.key) || '{}');
+            },
+            
+            save(settings) {
+                localStorage.setItem(this.key, JSON.stringify(settings));
+                // 更新全域變數供其他頁面使用
+                window.SITE_SETTINGS = settings;
+            },
+            
+            defaults: {
+                siteName: 'Aquarium Studio',
+                siteSubtitle: '專業孔雀魚專賣店',
+                lineId: 'tsAGZrm9vt',
+                contactEmail: '',
+                heroTitle: '專業孔雀魚養殖與販售',
+                heroSubtitle: '精選優質品種 | 讓您輕鬆擁有美麗的水族世界',
+                careGuideTitle: '孔雀魚飼養指南',
+                optimalTemp: '24-26°C',
+                optimalPH: '7.0-7.5',
+                currency: 'NT$',
+                showStock: true,
+                enableReviews: true
+            }
+        };
+
+        // 載入設定
+        function loadSettings() {
+            const settings = SiteSettings.get();
+            const defaults = SiteSettings.defaults;
+            const merged = { ...defaults, ...settings };
+            
+            document.getElementById('siteName').value = merged.siteName;
+            document.getElementById('siteSubtitle').value = merged.siteSubtitle;
+            document.getElementById('lineId').value = merged.lineId;
+            document.getElementById('contactEmail').value = merged.contactEmail || '';
+            document.getElementById('heroTitle').value = merged.heroTitle;
+            document.getElementById('heroSubtitle').value = merged.heroSubtitle;
+            document.getElementById('careGuideTitle').value = merged.careGuideTitle;
+            document.getElementById('optimalTemp').value = merged.optimalTemp;
+            document.getElementById('optimalPH').value = merged.optimalPH;
+            document.getElementById('currency').value = merged.currency;
+            document.getElementById('showStock').checked = merged.showStock;
+            document.getElementById('enableReviews').checked = merged.enableReviews;
+        }
+
+        // 儲存設定
+        function saveSettings(event) {
+            event.preventDefault();
+            
+            const settings = {
+                siteName: document.getElementById('siteName').value.trim(),
+                siteSubtitle: document.getElementById('siteSubtitle').value.trim(),
+                lineId: document.getElementById('lineId').value.trim(),
+                contactEmail: document.getElementById('contactEmail').value.trim(),
+                heroTitle: document.getElementById('heroTitle').value.trim(),
+                heroSubtitle: document.getElementById('heroSubtitle').value.trim(),
+                careGuideTitle: document.getElementById('careGuideTitle').value.trim(),
+                optimalTemp: document.getElementById('optimalTemp').value.trim(),
+                optimalPH: document.getElementById('optimalPH').value.trim(),
+                currency: document.getElementById('currency').value,
+                showStock: document.getElementById('showStock').checked,
+                enableReviews: document.getElementById('enableReviews').checked
+            };
+            
+            SiteSettings.save(settings);
+            showToast('✅ 設定已儲存！', 'success');
+        }
+
+        // 預覽
+        function previewSettings() {
+            window.open('../index.html', '_blank');
+            showToast('預覽頁面已開啟', 'success');
+        }
+
+        // Toast 通知
+        function showToast(message, type = 'success') {
+            const existing = document.querySelector('.toast');
+            if (existing) existing.remove();
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideIn 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // 手機選單
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            
+            const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
+            const navLinks = document.querySelector('.nav-links');
+            
+            if (mobileMenuBtn && navLinks) {
+                mobileMenuBtn.addEventListener('click', () => {
+                    navLinks.classList.toggle('active');
+                });
+            }
+        });
+
+        // 匯出
+        window.saveSettings = saveSettings;
+        window.previewSettings = previewSettings;
+    </script>
+</body>
+</html>
