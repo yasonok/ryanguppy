@@ -84,6 +84,8 @@ function renderPreviewProducts() {
 }
 
 // 從 Supabase 載入商品
+let lastProductCount = 0;
+
 async function loadProducts() {
     try {
         const { data, error } = await supabase
@@ -94,6 +96,14 @@ async function loadProducts() {
 
         if (error) throw error;
 
+        const newCount = data?.length || 0;
+        
+        // 🆕 如果商品數量增加，顯示提示
+        if (lastProductCount > 0 && newCount > lastProductCount) {
+            showToast('🆕 有新商品上架了！');
+        }
+        lastProductCount = newCount;
+        
         allProducts = data || [];
         renderProducts(allProducts);
     } catch (error) {
@@ -285,6 +295,12 @@ function subscribeToProducts() {
         .subscribe((status) => {
             console.log('📡 訂閱狀態:', status);
         });
+
+    // 🆕 備援方案：每 15 秒自動刷新（就算 Realtime 沒開也能即時看到新商品）
+    setInterval(() => {
+        console.log('🔄 自動刷新商品列表...');
+        loadProducts();
+    }, 15000);
 }
 
 // 開啟購物車
