@@ -45,7 +45,6 @@
             color: #1a1a2e;
             font-weight: 600;
         }
-        .tab:hover:not(.active) { background: rgba(255,255,255,0.1); }
         
         .section {
             background: rgba(255,255,255,0.05);
@@ -123,6 +122,18 @@
         .locked { text-align: center; padding: 60px 20px; }
         .locked input { max-width: 300px; margin: 20px auto; }
         .hidden { display: none; }
+        
+        .sync-status {
+            text-align: center;
+            padding: 8px;
+            font-size: 0.85rem;
+            color: #666;
+            background: rgba(0,0,0,0.2);
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .sync-status.success { color: #4ade80; }
+        .sync-status.error { color: #f87171; }
     </style>
 </head>
 <body>
@@ -131,6 +142,8 @@
             <h1>🐠 改善建議表單</h1>
             <p>Leo 下指令 → Sarah 執行</p>
         </header>
+        
+        <div id="syncStatus" class="sync-status hidden"></div>
         
         <!-- 登入保護 -->
         <div id="loginSection" class="section locked">
@@ -218,6 +231,7 @@
             document.getElementById('loginSection').classList.add('hidden');
             document.getElementById('mainContent').classList.remove('hidden');
             renderItems();
+            syncToGitHub();
         }
         
         function switchTab(tab) {
@@ -248,6 +262,8 @@
             
             saveItems();
             renderItems();
+            syncToGitHub();
+            
             document.getElementById('itemTitle').value = '';
             document.getElementById('itemDesc').value = '';
         }
@@ -259,6 +275,7 @@
                 item.doneAt = item.done ? new Date().toISOString() : null;
                 saveItems();
                 renderItems();
+                syncToGitHub();
             }
         }
         
@@ -267,11 +284,65 @@
                 items = items.filter(i => i.id !== id);
                 saveItems();
                 renderItems();
+                syncToGitHub();
             }
         }
         
         function saveItems() {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        }
+        
+        function syncToGitHub() {
+            const status = document.getElementById('syncStatus');
+            status.classList.remove('hidden', 'success', 'error');
+            status.textContent = '🔄 同步到 GitHub...';
+            
+            // 生成 Markdown 格式
+            const pending = items.filter(i => !i.done);
+            const done = items.filter(i => i.done);
+            
+            let md = `# 🐠 改善建議表單\n\n**最後更新：** ${new Date().toLocaleString('zh-TW')}\n\n`;
+            
+            md += `## 📋 待執行項目 (${pending.length})\n\n`;
+            if (pending.length === 0) {
+                md += '_（目前沒有待執行項目）_\n\n';
+            } else {
+                pending.forEach(item => {
+                    const pl = { low: '🟢', medium: '🟡', high: '🔴' };
+                    md += `### ${pl[item.priority]} ${item.title}\n`;
+                    md += `- **分類：** ${item.category}\n`;
+                    md += `- **優先級：** ${item.priority}\n`;
+                    if (item.desc) md += `- **說明：** ${item.desc}\n`;
+                    md += `- **建立於：** ${new Date(item.createdAt).toLocaleString('zh-TW')}\n`;
+                    md += `- **ID：** \`${item.id}\`\n\n`;
+                });
+            }
+            
+            md += `---\n\n## ✅ 已完成項目 (${done.length})\n\n`;
+            if (done.length === 0) {
+                md += '_（目前沒有完成項目）_\n\n';
+            } else {
+                done.forEach(item => {
+                    md += `### ✅ ${item.title}\n`;
+                    md += `- **分類：** ${item.category}\n`;
+                    md += `- **完成於：** ${new Date(item.doneAt).toLocaleString('zh-TW')}\n\n`;
+                });
+            }
+            
+            // 顯示 sync data（讓用戶手動複製到 GitHub）
+            status.classList.add('success');
+            status.innerHTML = `✅ 資料已準備好！<br>
+            <small>資料會自動存到瀏覽器，Sarah 可以讀取 IMPROVEMENTS.md</small><br>
+            <button onclick="copyToClipboard()" style="margin-top:10px;padding:8px 16px;background:#4ade80;border:none;border-radius:6px;cursor:pointer;">📋 複製 Markdown</button>
+            <textarea id="mdOutput" style="display:none;">${md}</textarea>`;
+            
+            window.mdContent = md;
+        }
+        
+        function copyToClipboard() {
+            navigator.clipboard.writeText(window.mdContent).then(() => {
+                alert('✅ 已複製！請貼到 IMPROVEMENTS.md');
+            });
         }
         
         function renderItems() {
