@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐠 ryanguppy 改善建議表單</title>
+    <title>🐠 改善建議表單</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -13,7 +13,7 @@
             padding: 20px;
             color: #fff;
         }
-        .container { max-width: 800px; margin: 0 auto; }
+        .container { max-width: 900px; margin: 0 auto; }
         
         header {
             text-align: center;
@@ -23,6 +23,29 @@
         }
         header h1 { font-size: 1.8rem; margin-bottom: 10px; }
         header p { color: #888; }
+        
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.05);
+            border: none;
+            border-radius: 8px;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            background: #4ade80;
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+        .tab:hover:not(.active) { background: rgba(255,255,255,0.1); }
         
         .section {
             background: rgba(255,255,255,0.05);
@@ -54,19 +77,22 @@
             transition: all 0.2s;
         }
         .btn-primary {
-            background: #fbbf24;
+            background: #4ade80;
             color: #1a1a2e;
             font-weight: 600;
         }
-        .btn-primary:hover { background: #f59e0b; }
+        .btn-primary:hover { background: #22c55e; }
         
         .item {
             background: rgba(0,0,0,0.2);
             border-radius: 12px;
             padding: 16px;
             margin-bottom: 12px;
-            border-left: 4px solid #fbbf24;
+            border-left: 4px solid #4ade80;
         }
+        .item.seo { border-left-color: #60a5fa; }
+        .item.dashboard { border-left-color: #f472b6; }
+        .item.ryanguppy { border-left-color: #fbbf24; }
         .item.done {
             border-left-color: #64748b;
             opacity: 0.6;
@@ -85,6 +111,9 @@
             font-size: 0.75rem;
             margin-left: 8px;
         }
+        .tag.seo { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+        .tag.dashboard { background: rgba(244, 114, 182, 0.2); color: #f472b6; }
+        .tag.ryanguppy { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
         .tag.priority-high { background: rgba(248, 113, 113, 0.2); color: #f87171; }
         .tag.priority-medium { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
         .tag.priority-low { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
@@ -99,7 +128,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>🐠 ryanguppy 改善建議表單</h1>
+            <h1>🐠 改善建議表單</h1>
             <p>Leo 下指令 → Sarah 執行</p>
         </header>
         
@@ -113,12 +142,27 @@
         
         <!-- 主要內容 -->
         <div id="mainContent" class="hidden">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('all')">📋 全部</button>
+                <button class="tab" onclick="switchTab('seo')">🔍 SEO</button>
+                <button class="tab" onclick="switchTab('dashboard')">📊 Dashboard</button>
+                <button class="tab" onclick="switchTab('ryanguppy')">🐠 ryanguppy</button>
+            </div>
+            
             <!-- 新增表單 -->
             <div class="section">
                 <h2>📝 新增改善項目</h2>
                 <div class="form-group">
                     <label>項目名稱</label>
                     <input type="text" id="itemTitle" placeholder="例如：優化商品卡片樣式" />
+                </div>
+                <div class="form-group">
+                    <label>分類</label>
+                    <select id="itemCategory">
+                        <option value="seo">🔍 SEO</option>
+                        <option value="dashboard">📊 Dashboard</option>
+                        <option value="ryanguppy">🐠 ryanguppy</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>優先級</label>
@@ -154,6 +198,7 @@
         const PASSWORD = 'leo123';
         
         let items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        let currentTab = 'all';
         
         document.addEventListener('DOMContentLoaded', () => {
             if (sessionStorage.getItem('adminLoggedIn')) showMainContent();
@@ -175,8 +220,16 @@
             renderItems();
         }
         
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderItems();
+        }
+        
         function addItem() {
             const title = document.getElementById('itemTitle').value.trim();
+            const category = document.getElementById('itemCategory').value;
             const priority = document.getElementById('itemPriority').value;
             const desc = document.getElementById('itemDesc').value.trim();
             
@@ -185,6 +238,7 @@
             items.unshift({
                 id: Date.now(),
                 title,
+                category,
                 priority,
                 desc,
                 done: false,
@@ -221,8 +275,13 @@
         }
         
         function renderItems() {
-            const pending = items.filter(i => !i.done);
-            const done = items.filter(i => i.done);
+            let pending = items.filter(i => !i.done);
+            let done = items.filter(i => i.done);
+            
+            if (currentTab !== 'all') {
+                pending = pending.filter(i => i.category === currentTab);
+                done = done.filter(i => i.category === currentTab);
+            }
             
             document.getElementById('pendingCount').textContent = pending.length;
             document.getElementById('doneCount').textContent = done.length;
@@ -232,13 +291,15 @@
         }
         
         function renderItem(item) {
+            const ci = { seo: '🔍', dashboard: '📊', ryanguppy: '🐠' };
             const pl = { low: '🟢 低', medium: '🟡 中', high: '🔴 高' };
             return `
-                <div class="item ${item.done ? 'done' : ''}">
+                <div class="item ${item.category} ${item.done ? 'done' : ''}">
                     <div class="item-header">
                         <div>
                             <input type="checkbox" class="checkbox" ${item.done ? 'checked' : ''} onchange="toggleItem(${item.id})" />
                             <span class="item-title">${item.title}</span>
+                            <span class="tag ${item.category}">${ci[item.category]} ${item.category}</span>
                             <span class="tag priority-${item.priority}">${pl[item.priority]}</span>
                         </div>
                         <button onclick="deleteItem(${item.id})" style="background:none;border:none;color:#666;cursor:pointer;">🗑️</button>
