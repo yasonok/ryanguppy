@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🐠 ryanguppy 改善建議表單</title>
+    <title>🐠 改善建議表單</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
@@ -13,7 +13,7 @@
             padding: 20px;
             color: #fff;
         }
-        .container { max-width: 800px; margin: 0 auto; }
+        .container { max-width: 900px; margin: 0 auto; }
         
         header {
             text-align: center;
@@ -23,6 +23,30 @@
         }
         header h1 { font-size: 1.8rem; margin-bottom: 10px; }
         header p { color: #888; }
+        
+        /* 標籤頁 */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .tab {
+            padding: 12px 24px;
+            background: rgba(255,255,255,0.05);
+            border: none;
+            border-radius: 8px;
+            color: #aaa;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .tab.active {
+            background: #4ade80;
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+        .tab:hover:not(.active) { background: rgba(255,255,255,0.1); }
         
         .section {
             background: rgba(255,255,255,0.05);
@@ -75,6 +99,9 @@
             margin-bottom: 12px;
             border-left: 4px solid #4ade80;
         }
+        .item.seo { border-left-color: #60a5fa; }
+        .item.dashboard { border-left-color: #f472b6; }
+        .item.ryanguppy { border-left-color: #fbbf24; }
         .item.done {
             border-left-color: #64748b;
             opacity: 0.6;
@@ -86,21 +113,26 @@
             margin-bottom: 8px;
         }
         .item-title { font-weight: 600; font-size: 1.05rem; }
-        .item-meta { font-size: 0.8rem; color: #666; }
         
         .tag {
             display: inline-block;
             padding: 4px 10px;
             border-radius: 20px;
             font-size: 0.75rem;
-            background: rgba(74, 222, 128, 0.2);
-            color: #4ade80;
+            margin-left: 8px;
         }
+        .tag.seo { background: rgba(96, 165, 250, 0.2); color: #60a5fa; }
+        .tag.dashboard { background: rgba(244, 114, 182, 0.2); color: #f472b6; }
+        .tag.ryanguppy { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .tag.priority-high { background: rgba(248, 113, 113, 0.2); color: #f87171; }
+        .tag.priority-medium { background: rgba(251, 191, 36, 0.2); color: #fbbf24; }
+        .tag.priority-low { background: rgba(74, 222, 128, 0.2); color: #4ade80; }
         
         .checkbox {
             width: 20px;
             height: 20px;
             cursor: pointer;
+            margin-right: 10px;
         }
         
         /* 密碼保護 */
@@ -114,19 +146,12 @@
         }
         
         .hidden { display: none; }
-        
-        /* 動畫 */
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .item { animation: slideIn 0.3s ease; }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🐠 ryanguppy 改善建議表單</h1>
+            <h1>🐠 改善建議表單</h1>
             <p>Leo 下指令 → Sarah 執行</p>
         </header>
         
@@ -140,12 +165,28 @@
         
         <!-- 主要內容 -->
         <div id="mainContent" class="hidden">
+            <!-- 標籤頁 -->
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('all')">📋 全部</button>
+                <button class="tab" onclick="switchTab('seo')">🔍 SEO</button>
+                <button class="tab" onclick="switchTab('dashboard')">📊 Dashboard</button>
+                <button class="tab" onclick="switchTab('ryanguppy')">🐠 ryanguppy</button>
+            </div>
+            
             <!-- 新增建議表單 -->
             <div class="section">
                 <h2>📝 新增改善項目</h2>
                 <div class="form-group">
                     <label>項目名稱</label>
                     <input type="text" id="itemTitle" placeholder="例如：優化商品卡片樣式" />
+                </div>
+                <div class="form-group">
+                    <label>分類</label>
+                    <select id="itemCategory">
+                        <option value="seo">🔍 SEO</option>
+                        <option value="dashboard">📊 Dashboard</option>
+                        <option value="ryanguppy">🐠 ryanguppy</option>
+                    </select>
                 </div>
                 <div class="form-group">
                     <label>優先級</label>
@@ -177,15 +218,13 @@
     </div>
     
     <script>
-        // 簡單的本地存儲 + 密碼保護
         const STORAGE_KEY = 'ryanguppy_improvements';
-        const PASSWORD = 'leo123'; // 可修改密碼
+        const PASSWORD = 'leo123';
         
         let items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        let currentTab = 'all';
         
-        // 初始化
         document.addEventListener('DOMContentLoaded', () => {
-            // 檢查是否已登入
             if (sessionStorage.getItem('adminLoggedIn')) {
                 showMainContent();
             }
@@ -207,8 +246,16 @@
             renderItems();
         }
         
+        function switchTab(tab) {
+            currentTab = tab;
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            renderItems();
+        }
+        
         function addItem() {
             const title = document.getElementById('itemTitle').value.trim();
+            const category = document.getElementById('itemCategory').value;
             const priority = document.getElementById('itemPriority').value;
             const desc = document.getElementById('itemDesc').value.trim();
             
@@ -220,6 +267,7 @@
             const item = {
                 id: Date.now(),
                 title,
+                category,
                 priority,
                 desc,
                 done: false,
@@ -231,7 +279,6 @@
             saveItems();
             renderItems();
             
-            // 清空表單
             document.getElementById('itemTitle').value = '';
             document.getElementById('itemDesc').value = '';
         }
@@ -259,8 +306,14 @@
         }
         
         function renderItems() {
-            const pending = items.filter(i => !i.done);
-            const done = items.filter(i => i.done);
+            let pending = items.filter(i => !i.done);
+            let done = items.filter(i => i.done);
+            
+            // 按分類篩選
+            if (currentTab !== 'all') {
+                pending = pending.filter(i => i.category === currentTab);
+                done = done.filter(i => i.category === currentTab);
+            }
             
             document.getElementById('pendingCount').textContent = pending.length;
             document.getElementById('doneCount').textContent = done.length;
@@ -270,33 +323,24 @@
         }
         
         function renderItem(item) {
-            const priorityColors = {
-                low: '#4ade80',
-                medium: '#fbbf24',
-                high: '#f87171'
-            };
-            const priorityLabels = {
-                low: '🟢 低',
-                medium: '🟡 中',
-                high: '🔴 高'
-            };
+            const categoryIcons = { seo: '🔍', dashboard: '📊', ryanguppy: '🐠' };
+            const priorityLabels = { low: '🟢 低', medium: '🟡 中', high: '🔴 高' };
             
             return `
-                <div class="item ${item.done ? 'done' : ''}">
+                <div class="item ${item.category} ${item.done ? 'done' : ''}">
                     <div class="item-header">
                         <div>
                             <input type="checkbox" class="checkbox" 
                                 ${item.done ? 'checked' : ''} 
                                 onchange="toggleItem(${item.id})" />
                             <span class="item-title">${item.title}</span>
-                            <span class="tag" style="background: ${priorityColors[item.priority]}20; color: ${priorityColors[item.priority]}">
-                                ${priorityLabels[item.priority]}
-                            </span>
+                            <span class="tag ${item.category}">${categoryIcons[item.category]} ${item.category}</span>
+                            <span class="tag priority-${item.priority}">${priorityLabels[item.priority]}</span>
                         </div>
                         <button onclick="deleteItem(${item.id})" style="background: none; border: none; color: #666; cursor: pointer;">🗑️</button>
                     </div>
                     ${item.desc ? `<p style="color: #aaa; margin-top: 8px;">${item.desc}</p>` : ''}
-                    <div class="item-meta" style="margin-top: 8px;">
+                    <div class="item-meta" style="margin-top: 8px; font-size: 0.8rem; color: #666;">
                         建立於：${new Date(item.createdAt).toLocaleString('zh-TW')}
                         ${item.doneAt ? `<br>完成於：${new Date(item.doneAt).toLocaleString('zh-TW')}` : ''}
                     </div>
