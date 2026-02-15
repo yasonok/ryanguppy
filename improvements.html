@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐠 ryanguppy 改善建議表單</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #fff;
+        }
+        .container { max-width: 800px; margin: 0 auto; }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            margin-bottom: 30px;
+        }
+        header h1 { font-size: 1.8rem; margin-bottom: 10px; }
+        header p { color: #888; }
+        
+        .section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+        }
+        .section h2 {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        /* 表單樣式 */
+        .form-group { margin-bottom: 16px; }
+        label { display: block; margin-bottom: 6px; color: #aaa; font-size: 0.9rem; }
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            font-size: 1rem;
+        }
+        textarea { min-height: 100px; resize: vertical; }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #4ade80;
+            color: #1a1a2e;
+            font-weight: 600;
+        }
+        .btn-primary:hover { background: #22c55e; }
+        
+        /* 項目列表 */
+        .item {
+            background: rgba(0,0,0,0.2);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 4px solid #4ade80;
+        }
+        .item.done {
+            border-left-color: #64748b;
+            opacity: 0.6;
+        }
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 8px;
+        }
+        .item-title { font-weight: 600; font-size: 1.05rem; }
+        .item-meta { font-size: 0.8rem; color: #666; }
+        
+        .tag {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            background: rgba(74, 222, 128, 0.2);
+            color: #4ade80;
+        }
+        
+        .checkbox {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        
+        /* 密碼保護 */
+        .locked {
+            text-align: center;
+            padding: 60px 20px;
+        }
+        .locked input {
+            max-width: 300px;
+            margin: 20px auto;
+        }
+        
+        .hidden { display: none; }
+        
+        /* 動畫 */
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .item { animation: slideIn 0.3s ease; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🐠 ryanguppy 改善建議表單</h1>
+            <p>Leo 下指令 → Sarah 執行</p>
+        </header>
+        
+        <!-- 登入保護 -->
+        <div id="loginSection" class="section locked">
+            <h2>🔐 管理員登入</h2>
+            <input type="password" id="adminPassword" placeholder="請輸入密碼" />
+            <button class="btn btn-primary" onclick="login()">登入</button>
+            <p id="loginError" style="color: #f87171; margin-top: 10px; display: none;">密碼錯誤</p>
+        </div>
+        
+        <!-- 主要內容 -->
+        <div id="mainContent" class="hidden">
+            <!-- 新增建議表單 -->
+            <div class="section">
+                <h2>📝 新增改善項目</h2>
+                <div class="form-group">
+                    <label>項目名稱</label>
+                    <input type="text" id="itemTitle" placeholder="例如：優化商品卡片樣式" />
+                </div>
+                <div class="form-group">
+                    <label>優先級</label>
+                    <select id="itemPriority">
+                        <option value="low">🟢 低 - 有空再做</option>
+                        <option value="medium" selected>🟡 中 - 正常排程</option>
+                        <option value="high">🔴 高 - 優先處理</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>詳細說明</label>
+                    <textarea id="itemDesc" placeholder="描述這個改善項目要做什麼..."></textarea>
+                </div>
+                <button class="btn btn-primary" onclick="addItem()">➕ 新增項目</button>
+            </div>
+            
+            <!-- 待執行項目 -->
+            <div class="section">
+                <h2>📋 待執行 (<span id="pendingCount">0</span>)</h2>
+                <div id="pendingList"></div>
+            </div>
+            
+            <!-- 已完成項目 -->
+            <div class="section">
+                <h2>✅ 已完成 (<span id="doneCount">0</span>)</h2>
+                <div id="doneList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 簡單的本地存儲 + 密碼保護
+        const STORAGE_KEY = 'ryanguppy_improvements';
+        const PASSWORD = 'leo123'; // 可修改密碼
+        
+        let items = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            // 檢查是否已登入
+            if (sessionStorage.getItem('adminLoggedIn')) {
+                showMainContent();
+            }
+        });
+        
+        function login() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === PASSWORD) {
+                sessionStorage.setItem('adminLoggedIn', 'true');
+                showMainContent();
+            } else {
+                document.getElementById('loginError').style.display = 'block';
+            }
+        }
+        
+        function showMainContent() {
+            document.getElementById('loginSection').classList.add('hidden');
+            document.getElementById('mainContent').classList.remove('hidden');
+            renderItems();
+        }
+        
+        function addItem() {
+            const title = document.getElementById('itemTitle').value.trim();
+            const priority = document.getElementById('itemPriority').value;
+            const desc = document.getElementById('itemDesc').value.trim();
+            
+            if (!title) {
+                alert('請輸入項目名稱');
+                return;
+            }
+            
+            const item = {
+                id: Date.now(),
+                title,
+                priority,
+                desc,
+                done: false,
+                createdAt: new Date().toISOString(),
+                doneAt: null
+            };
+            
+            items.unshift(item);
+            saveItems();
+            renderItems();
+            
+            // 清空表單
+            document.getElementById('itemTitle').value = '';
+            document.getElementById('itemDesc').value = '';
+        }
+        
+        function toggleItem(id) {
+            const item = items.find(i => i.id === id);
+            if (item) {
+                item.done = !item.done;
+                item.doneAt = item.done ? new Date().toISOString() : null;
+                saveItems();
+                renderItems();
+            }
+        }
+        
+        function deleteItem(id) {
+            if (confirm('確定要刪除這個項目嗎？')) {
+                items = items.filter(i => i.id !== id);
+                saveItems();
+                renderItems();
+            }
+        }
+        
+        function saveItems() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+        }
+        
+        function renderItems() {
+            const pending = items.filter(i => !i.done);
+            const done = items.filter(i => i.done);
+            
+            document.getElementById('pendingCount').textContent = pending.length;
+            document.getElementById('doneCount').textContent = done.length;
+            
+            document.getElementById('pendingList').innerHTML = pending.map(item => renderItem(item)).join('');
+            document.getElementById('doneList').innerHTML = done.map(item => renderItem(item)).join('');
+        }
+        
+        function renderItem(item) {
+            const priorityColors = {
+                low: '#4ade80',
+                medium: '#fbbf24',
+                high: '#f87171'
+            };
+            const priorityLabels = {
+                low: '🟢 低',
+                medium: '🟡 中',
+                high: '🔴 高'
+            };
+            
+            return `
+                <div class="item ${item.done ? 'done' : ''}">
+                    <div class="item-header">
+                        <div>
+                            <input type="checkbox" class="checkbox" 
+                                ${item.done ? 'checked' : ''} 
+                                onchange="toggleItem(${item.id})" />
+                            <span class="item-title">${item.title}</span>
+                            <span class="tag" style="background: ${priorityColors[item.priority]}20; color: ${priorityColors[item.priority]}">
+                                ${priorityLabels[item.priority]}
+                            </span>
+                        </div>
+                        <button onclick="deleteItem(${item.id})" style="background: none; border: none; color: #666; cursor: pointer;">🗑️</button>
+                    </div>
+                    ${item.desc ? `<p style="color: #aaa; margin-top: 8px;">${item.desc}</p>` : ''}
+                    <div class="item-meta" style="margin-top: 8px;">
+                        建立於：${new Date(item.createdAt).toLocaleString('zh-TW')}
+                        ${item.doneAt ? `<br>完成於：${new Date(item.doneAt).toLocaleString('zh-TW')}` : ''}
+                    </div>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
